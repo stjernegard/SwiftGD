@@ -44,7 +44,7 @@ private protocol CGDParametrizableDataEncoder: Encoder {
 /// Defines a type that can decode image `Data` representations into `gdImage`s.
 private protocol CGDDataDecoder: Decoder {
 
-    /// Function pointer to one of libgd's built-in **parametrizable** `Data` decoding functions
+    /// Function pointer to one of libgd's built-in `Data` decoding functions
     var decode: (_ size: Int32, _ data: UnsafeMutableRawPointer) -> gdImagePtr? { get }
 
     /// Creates a `gdImagePtr` from given `Data`.
