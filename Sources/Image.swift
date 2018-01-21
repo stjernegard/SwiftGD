@@ -200,9 +200,29 @@ public class Image {
 	}
 }
 
-// MARK: Import & Export
+// MARK: Encoding & Decoding
 
 extension Image {
+
+    /// Initializes a new `Image` instance using given `decoder` to decode given `Decodable` image representation.
+    ///
+    /// - Parameters:
+    ///    - decodable: The `Decodable` that represents an image.
+    ///    - decoder: The `Decoder` that can decode given `Decodable` image representation.
+    /// - Returns: An `Image` instance of the image represented by `Decodable`.
+    /// - Throws: `Error` if the image representation of `Decodable` could not be decoded.
+    internal convenience init<T: Decoder>(decode decodable: T.Decodable, using decoder: T) throws {
+        self.init(gdImage: try decoder.decode(decodable: decodable))
+    }
+
+    /// Exports the image as `Encodable` using given `encoder` for image encoding
+    ///
+    /// - Parameter encoder: The `Encoder` to use for encoding the image (`self`) as `Encodable`.
+    /// - Returns: The `Encodable` that represents the image (`self`)
+    /// - Throws: `Error` if the encoding of `self` using given `encoder` failed.
+    internal func encode<T: Encoder>(using encoder: T) throws -> T.Encodable {
+        return try encoder.encode(image: internalImage)
+    }
 
     public convenience init?(url: URL) {
         let inputFile = fopen(url.path, "rb")
@@ -251,25 +271,5 @@ extension Image {
 
         // return true or false based on whether the output file now exists
         return fm.fileExists(atPath: url.path)
-    }
-
-    /// Initializes a new `Image` instance from given image data in specified raster format.
-    /// If `DefaultImportableRasterFormat` is omitted, all supported raster formats will be evaluated.
-    ///
-    /// - Parameters:
-    ///   - data: The image data
-    ///   - rasterFormat: The raster format of image data (e.g. png, webp, ...). Defaults to `.any`
-    /// - Throws: `Error` if `data` in `rasterFormat` could not be converted
-    public convenience init(data: Data, as format: ImportableFormat = .any) throws {
-        try self.init(gdImage: format.imagePtr(of: data))
-    }
-
-    /// Exports the image as `Data` object in specified raster format.
-    ///
-    /// - Parameter format: The raster format of the returning image data (e.g. as jpg, png, ...). Defaults to `.png`
-    /// - Returns: The image data
-    /// - Throws: `Error` if the export of `self` in specified raster format failed.
-    public func export(as format: ExportableFormat = .png) throws -> Data {
-        return try format.data(of: internalImage)
     }
 }

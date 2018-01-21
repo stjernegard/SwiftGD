@@ -182,4 +182,3 @@ extension Rectangle: Equatable {
         return lhs.point == rhs.point && lhs.size == rhs.size
     }
 }
-
