@@ -64,12 +64,6 @@ private typealias CGDParametrizableDataCoder = CGDParametrizableDataEncoder & CG
 // MARK: Common LibGd Data Coding
 
 extension CGDDataEncoder {
-
-    /// Creates a data representation of given `gdImagePtr`.
-    ///
-    /// - Parameter image: The `gdImagePtr` of which a data representation should be instantiated.
-    /// - Returns: The (raw) `Data` of the image
-    /// - Throws: `Error` if encoding failed.
     internal func encode(image: gdImagePtr) throws -> Data {
         var size: Int32 = 0
         guard let bytesPtr = encode(image, &size) else { throw Error.invalidFormat }
@@ -78,12 +72,6 @@ extension CGDDataEncoder {
 }
 
 extension CGDDataDecoder {
-
-    /// Creates a `gdImagePtr` from given image data.
-    ///
-    /// - Parameter decodable: The image data of which an image should be instantiated.
-    /// - Returns: The `gdImagePtr` of the instantiated image.
-    /// - Throws: `Error` if decoding failed.
     internal func decode(decodable: Data) throws -> gdImagePtr {
         let (pointer, size) = try decodable.memory()
         guard let imagePtr = decode(size, pointer) else { throw Error.invalidFormat }
@@ -92,12 +80,6 @@ extension CGDDataDecoder {
 }
 
 extension CGDParametrizableDataEncoder {
-
-    /// Creates a data representation of given `gdImagePtr`.
-    ///
-    /// - Parameter image: The `gdImagePtr` of which a data representation should be instantiated.
-    /// - Returns: The (raw) `Data` of the image
-    /// - Throws: `Error` if encoding failed.
     internal func encode(image: gdImagePtr) throws -> Data {
         var size: Int32 = 0
         guard let bytesPtr = encode(image, &size, encodingParameters) else {
@@ -111,9 +93,9 @@ extension CGDParametrizableDataEncoder {
 
 /// Defines a coder to be used on BMP `Data` encoding & decoding
 private struct BMPDataCoder: CGDParametrizableDataCoder {
-
-    /// The parameters to apply on encoding
     fileprivate let encodingParameters: Int32
+    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromBmpPtr
+    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageBmpPtr
 
     /// Initializes a new instance of `Self` using given RLE compression option on encoding
     ///
@@ -123,29 +105,19 @@ private struct BMPDataCoder: CGDParametrizableDataCoder {
     fileprivate init(compression: Bool = false) {
         encodingParameters = compression ? 1 : 0
     }
-
-    /// Function pointer to libgd's built-in BMP `Data` decoding functions
-    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromBmpPtr
-
-    /// Function pointer to libgd's built-in BMP `Data` encoding functions
-    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageBmpPtr
 }
 
 /// Defines a coder to be used on GIF `Data` encoding & decoding
 private struct GIFDataCoder: CGDDataCoder {
-
-    /// Function pointer to libgd's built-in GIF `Data` decoding functions
     fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromGifPtr
-
-    /// Function pointer to libgd's built-in GIF `Data` encoding functions
     fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>) -> UnsafeMutableRawPointer? = gdImageGifPtr
 }
 
 /// Defines a coder to be used on JPEG `Data` encoding & decoding
 private struct JPGDataCoder: CGDParametrizableDataCoder {
-
-    /// The parameters to apply on encoding
     fileprivate let encodingParameters: Int32
+    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromJpegPtr
+    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageJpegPtr
 
     /// Initializes a new instance of `Self` using given quality on encoding.
     ///
@@ -158,46 +130,30 @@ private struct JPGDataCoder: CGDParametrizableDataCoder {
     fileprivate init(quality: Int32 = -1) {
         encodingParameters = quality
     }
-
-    /// Function pointer to libgd's built-in JPEG `Data` decoding functions
-    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromJpegPtr
-
-    /// Function pointer to libgd's built-in JPEG `Data` encoding functions
-    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageJpegPtr
 }
 
 /// Defines a coder to be used on PNG `Data` encoding & decoding
 private struct PNGDataCoder: CGDDataCoder {
-
-    /// Function pointer to libgd's built-in PNG `Data` decoding functions
     fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromPngPtr
-
-    /// Function pointer to libgd's built-in PNG `Data` encoding functions
     fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>) -> UnsafeMutableRawPointer? = gdImagePngPtr
 }
 
 /// Defines a coder to be used on TIFF `Data` encoding & decoding
 private struct TIFFDataCoder: CGDDataCoder {
-
-    /// Function pointer to libgd's built-in TIFF `Data` decoding functions
     fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromTiffPtr
-
-    /// Function pointer to libgd's built-in TIFF `Data` encoding functions
     fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>) -> UnsafeMutableRawPointer? = gdImageTiffPtr
 }
 
 /// Defines a coder to be used on TGA `Data` decoding (TGA does not have native encoding support)
 private struct TGADataDecoder: CGDDataDecoder {
-
-    /// Function pointer to libgd's built-in TGA `Data` decoding functions
     fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromTgaPtr
 }
 
 /// Defines a coder to be used on WBMP `Data` encoding & decoding
 private struct WBMPDataCoder: CGDParametrizableDataCoder {
-
-    /// The parameters to apply on encoding
     fileprivate let encodingParameters: Int32
+    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromWBMPPtr
+    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageWBMPPtr
 
     /// Initializes a new instance of `Self` using index as foreground color on encodings
     ///
@@ -207,21 +163,11 @@ private struct WBMPDataCoder: CGDParametrizableDataCoder {
     fileprivate init(index: Int32) {
         encodingParameters = index
     }
-
-    /// Function pointer to libgd's built-in WBMP `Data` decoding functions
-    fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromWBMPPtr
-
-    /// Function pointer to libgd's built-in WBMP `Data` encoding functions
-    fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>, Int32) -> UnsafeMutableRawPointer? = gdImageWBMPPtr
 }
 
 /// Defines a coder to be used on WEBP `Data` encoding & decoding
 private struct WEBPDataCoder: CGDDataCoder {
-
-    /// Function pointer to libgd's built-in WEBP `Data` decoding functions
     fileprivate let decode: (Int32, UnsafeMutableRawPointer) -> gdImagePtr? = gdImageCreateFromWebpPtr
-
-    /// Function pointer to libgd's built-in WEBP `Data` encoding functions
     fileprivate let encode: (gdImagePtr, UnsafeMutablePointer<Int32>) -> UnsafeMutableRawPointer? = gdImageWebpPtr
 }
 
