@@ -24,20 +24,6 @@ private protocol CGDDataEncoder: Encoder {
     func encode(image: gdImagePtr) throws -> Data
 }
 
-/// Defines a type that can decode image `Data` representations into `gdImage`s.
-private protocol CGDDataDecoder: Decoder {
-
-    /// Function pointer to one of libgd's built-in **parametrizable** `Data` decoding functions
-    var decode: (_ size: Int32, _ data: UnsafeMutableRawPointer) -> gdImagePtr? { get }
-
-    /// Creates a `gdImagePtr` from given `Data`.
-    ///
-    /// - Parameter decodable: The `Data` object to decode an image
-    /// - Returns: The `gdImagePtr` of the instantiated image
-    /// - Throws: `Error` if decoding failed
-    func decode(decodable: Data) throws -> gdImagePtr
-}
-
 /// Defines a type that can encode any `gdImage` using libgd's built-in **parametrizable** `Data` encoding
 private protocol CGDParametrizableDataEncoder: Encoder {
 
@@ -53,6 +39,20 @@ private protocol CGDParametrizableDataEncoder: Encoder {
     /// - Returns: The native format for external representation
     /// - Throws: `Error` if encoding failed
     func encode(image: gdImagePtr) throws -> Data
+}
+
+/// Defines a type that can decode image `Data` representations into `gdImage`s.
+private protocol CGDDataDecoder: Decoder {
+
+    /// Function pointer to one of libgd's built-in **parametrizable** `Data` decoding functions
+    var decode: (_ size: Int32, _ data: UnsafeMutableRawPointer) -> gdImagePtr? { get }
+
+    /// Creates a `gdImagePtr` from given `Data`.
+    ///
+    /// - Parameter decodable: The `Data` object to decode an image
+    /// - Returns: The `gdImagePtr` of the instantiated image
+    /// - Throws: `Error` if decoding failed
+    func decode(decodable: Data) throws -> gdImagePtr
 }
 
 /// Defines a type that can be used for both, encoding & decoding, of one of libgd's built-in **none**-parametrizable coding functions
@@ -71,14 +71,6 @@ extension CGDDataEncoder {
     }
 }
 
-extension CGDDataDecoder {
-    internal func decode(decodable: Data) throws -> gdImagePtr {
-        let (pointer, size) = try decodable.memory()
-        guard let imagePtr = decode(size, pointer) else { throw Error.invalidFormat }
-        return imagePtr
-    }
-}
-
 extension CGDParametrizableDataEncoder {
     internal func encode(image: gdImagePtr) throws -> Data {
         var size: Int32 = 0
@@ -86,6 +78,14 @@ extension CGDParametrizableDataEncoder {
             throw Error.invalidFormat
         }
         return Data(bytes: bytesPtr, count: Int(size))
+    }
+}
+
+extension CGDDataDecoder {
+    internal func decode(decodable: Data) throws -> gdImagePtr {
+        let (pointer, size) = try decodable.memory()
+        guard let imagePtr = decode(size, pointer) else { throw Error.invalidFormat }
+        return imagePtr
     }
 }
 
