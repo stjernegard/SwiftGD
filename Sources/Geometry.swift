@@ -78,7 +78,7 @@ extension Size: Comparable {
     ///   - lhs: A value to compare.
     ///   - rhs: Another value to compare.
     public static func < (lhs: Size, rhs: Size) -> Bool {
-        return lhs.width < rhs.width && lhs.height < rhs.height
+        return lhs.width * lhs.height < rhs.width * rhs.height
     }
 
     /// Returns a Boolean value indicating whether two values are equal.
