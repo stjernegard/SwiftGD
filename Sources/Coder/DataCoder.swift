@@ -8,24 +8,30 @@
 
 import Foundation
 
-// MARK: - Decoding
+// MARK: - Encoding
 
-extension DecodableRasterFormat {
+/// Defines a coder to be used on supported `EncodableRasterFormat` `Data` encoding
+private struct DataEncoder: Encoder {
 
-    /// Function pointer to one of libgd's built-in `Data` decoding functions
-    fileprivate var decode: (_ size: Int32, _ data: UnsafeMutableRawPointer) -> gdImagePtr? {
-        switch self {
-        case .bmp: return gdImageCreateFromBmpPtr
-        case .gif: return gdImageCreateFromWebpPtr
-        case .jpg: return gdImageCreateFromJpegPtr
-        case .png: return gdImageCreateFromPngPtr
-        case .tiff: return gdImageCreateFromTiffPtr
-        case .tga: return gdImageCreateFromTgaPtr
-        case .wbmp: return gdImageCreateFromWBMPPtr
-        case .webp: return gdImageCreateFromWebpPtr
+    /// The raster format of the to be created/encoded data represention of images passed to this encoder
+    fileprivate let format: EncodableRasterFormat
+
+    /// Creates a `Data` instance from given `gdImagePtr`.
+    ///
+    /// - Parameter image: The `gdImagePtr` to encode
+    /// - Returns: The image data representation of given `image`.
+    /// - Throws: `Error` if encoding failed
+    func encode(image: gdImagePtr) throws -> Data {
+        var size: Int32 = 0
+        format.prepare(image: image)
+        guard let bytesPtr = format.encodeData(image, &size, format.encodingParameters) else {
+            throw Error.invalidFormat
         }
+        return Data(bytes: bytesPtr, count: Int(size))
     }
 }
+
+// MARK: - Decoding
 
 /// Defines a coder to be used on supported `DecodableRasterFormat` `Data` decoding
 private struct DataDecoder: Decoder {
@@ -43,7 +49,7 @@ private struct DataDecoder: Decoder {
             throw Error.invalidImage(reason: "Given image data exceeds maximum allowed bytes (must be in int32 range)")
         }
         let dataPointer = decodable.withUnsafeBytes({ UnsafeMutableRawPointer(mutating: $0) })
-        guard let imagePtr = format.decode(Int32(decodable.count), dataPointer) else {
+        guard let imagePtr = format.decodeData(Int32(decodable.count), dataPointer) else {
             throw Error.invalidFormat
         }
         return imagePtr
@@ -68,46 +74,6 @@ private struct CollectionDataDecoder: Decoder {
             }
         }
         throw Error.invalidImage(reason: "No matching decoder for given image found")
-    }
-}
-
-// MARK: - Encoding
-
-extension EncodableRasterFormat {
-
-    /// Function pointer to one of libgd's built-in `Data` encoding functions
-    fileprivate var encode: (_ image: gdImagePtr, _ size: UnsafeMutablePointer<Int32>, _ parameters: Int32) -> UnsafeMutableRawPointer? {
-        switch self {
-        case .bmp: return gdImageBmpPtr
-        case .jpg: return gdImageJpegPtr
-        case .png: return gdImagePngPtrEx
-        case .wbmp: return gdImageWBMPPtr
-        // None-parametrizable formats (strips parameters)
-        case .gif: return { image, size, _ in gdImageGifPtr(image, size) }
-        case .tiff: return { image, size, _ in gdImageTiffPtr(image, size) }
-        case .webp: return { image, size, _ in gdImageWebpPtr(image, size) }
-        }
-    }
-}
-
-/// Defines a coder to be used on supported `EncodableRasterFormat` `Data` encoding
-private struct DataEncoder: Encoder {
-
-    /// The raster format of the to be created/encoded data represention of images passed to this encoder
-    fileprivate let format: EncodableRasterFormat
-
-    /// Creates a `Data` instance from given `gdImagePtr`.
-    ///
-    /// - Parameter image: The `gdImagePtr` to encode
-    /// - Returns: The image data representation of given `image`.
-    /// - Throws: `Error` if encoding failed
-    func encode(image: gdImagePtr) throws -> Data {
-        var size: Int32 = 0
-        format.prepare(image: image)
-        guard let bytesPtr = format.encode(image, &size, format.encodingParameters) else {
-            throw Error.invalidFormat
-        }
-        return Data(bytes: bytesPtr, count: Int(size))
     }
 }
 

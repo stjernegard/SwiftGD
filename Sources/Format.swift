@@ -1,5 +1,7 @@
 import Foundation
 
+// TODO: Refactor encodable raster format options
+
 /// Encodable raster formats
 ///
 /// - bmp: https://en.wikipedia.org/wiki/bmp_file_format
