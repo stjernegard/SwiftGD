@@ -36,6 +36,3 @@ internal protocol Decoder {
     /// - Throws: `Error` if decoding failed
     func decode(decodable: Decodable) throws -> gdImagePtr
 }
-
-/// Defines a type that can be used for both, encoding & decoding.
-internal typealias Coder = Encoder & Decoder
