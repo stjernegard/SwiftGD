@@ -29,7 +29,9 @@ public class Image {
 		self.internalImage = gdImage
 	}
 
-	public func resizedTo(width: Int, height: Int, applySmoothing: Bool = true) -> Image? {
+extension Image {
+
+	public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) -> Image? {
 		applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: Size(width: width, height: height))
 
 		guard let output = gdImageScale(internalImage, UInt32(width), UInt32(height)) else { return nil }
