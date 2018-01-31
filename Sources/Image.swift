@@ -18,11 +18,6 @@ public final class Image {
     /// The underlying image to manage and process
 	private var internalImage: gdImagePtr
 
-    /// The size of the image in pixel
-    public var size: Size {
-        return Size(width: internalImage.pointee.sx, height: internalImage.pointee.sy)
-    }
-
     /// Initializes a new image handling/representing given `gdImagePtr`
     ///
     /// - Parameter gdImage: The underlying image of the `Image` instance to be created.
@@ -36,7 +31,39 @@ public final class Image {
     }
 }
 
-// MARK: Generic True Color Image
+// MARK: Properties & Subscripts
+
+extension Image {
+
+    /// The size of the image in pixel
+    public var size: Size {
+        return Size(width: internalImage.pointee.sx, height: internalImage.pointee.sy)
+    }
+
+    /// Returns or sets the color of given `pixel` coordinate (`Point`).
+    ///
+    /// - Parameter pixel: The pixel to read or write given color
+    public subscript(pixel: Point) -> Color {
+        get { return self[pixel.x, pixel.y] }
+        set(color) { self[pixel.x, pixel.y] = color }
+    }
+
+    /// Returns or sets the color of given `pixel` coordinate.
+    ///
+    /// - Parameter pixel: The pixel to read or write given color
+    public subscript(x: Int32, y: Int32) -> Color {
+        get {
+            return Color(libgd: gdImageGetTrueColorPixel(internalImage, x, y))
+        }
+        set(color) {
+            let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+            gdImageSetPixel(internalImage, x, y, color)
+            gdImageColorDeallocate(internalImage, color)
+        }
+    }
+}
+
+// MARK: Plain True Color Image
 
 extension Image {
 
@@ -61,7 +88,7 @@ extension Image {
     }
 }
 
-// MARK: Image Coding
+// MARK: Generic Image Coding
 
 extension Image {
 
@@ -89,16 +116,6 @@ extension Image {
 // MARK: - Drawing
 
 extension Image {
-
-    public func color(of pixel: Point) -> Color {
-        return Color(libgd: gdImageGetTrueColorPixel(internalImage, pixel.x, pixel.y))
-    }
-
-    public func set(pixel: Point, to color: Color) {
-        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
-        gdImageSetPixel(internalImage, pixel.x, pixel.y, color)
-        gdImageColorDeallocate(internalImage, color)
-    }
 
     public func fill(from point: Point, color: Color) {
         let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
