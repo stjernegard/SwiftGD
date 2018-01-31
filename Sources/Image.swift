@@ -8,7 +8,9 @@
 
 import Foundation
 
-/// Allows a more "swifty" handling of gdimage pointer instances
+// MARK: Incorporate "success" return values (GD_TRUE (1) on success, GD_FALSE (0) on failure)
+
+/// Allows a more "swifty" handling of gdimage pointer instances within the module
 internal typealias GDImage = gdImagePtr
 
 // In case you were wondering: it's a class rather than a struct because we need
@@ -45,7 +47,7 @@ extension Image {
     /// - Parameter pixel: The pixel to read or write given color
     public subscript(pixel: Point) -> Color {
         get { return self[pixel.x, pixel.y] }
-        set(color) { self[pixel.x, pixel.y] = color }
+        set { self[pixel.x, pixel.y] = newValue }
     }
 
     /// Returns or sets the color of given `pixel` coordinate.
@@ -55,8 +57,8 @@ extension Image {
         get {
             return Color(libgd: gdImageGetTrueColorPixel(internalImage, x, y))
         }
-        set(color) {
-            let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        set {
+            let color = gdImageColorAllocateAlpha(internalImage, newValue.gdRed, newValue.gdGreen, newValue.gdBlue, newValue.gdAlpha)
             gdImageSetPixel(internalImage, x, y, color)
             gdImageColorDeallocate(internalImage, color)
         }
@@ -188,27 +190,51 @@ extension Image {
         }
     }
 
+    public func resizeTo(size newSize: Size, applySmoothing: Bool = true) throws {
+        applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: newSize)
+        guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else {
+            throw Error.resizingFailed(reason: "Could not resize image")
+        }
+        gdImageDestroy(internalImage)
+        internalImage = output
+    }
+
+    public func resizeTo(width: Int32, height: Int32, applySmoothing: Bool = true) throws {
+        try resizeTo(size: Size(width: width, height: height), applySmoothing: applySmoothing)
+    }
+
+    public func resizeTo(width: Int32, applySmoothing: Bool = true) throws {
+        let currentSize = size
+        let heightAdjustment = Double(width) / Double(currentSize.width)
+        try resizeTo(width: width, height: Int32(Double(currentSize.height) * Double(heightAdjustment)), applySmoothing: applySmoothing)
+    }
+
+    public func resizeTo(height: Int32, applySmoothing: Bool = true) throws {
+        let currentSize = size
+        let widthAdjustment = Double(height) / Double(currentSize.height)
+        try resizeTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
+    }
+
     public func resizedTo(size newSize: Size, applySmoothing: Bool = true) -> Image? {
         applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: newSize)
-
         guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else { return nil }
         return Image(gdImage: output)
     }
 
     public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) -> Image? {
-        return resizedTo(size: Size(width: width, height: height))
+        return resizedTo(size: Size(width: width, height: height), applySmoothing: applySmoothing)
     }
 
 	public func resizedTo(width: Int32, applySmoothing: Bool = true) -> Image? {
 		let currentSize = size
 		let heightAdjustment = Double(width) / Double(currentSize.width)
-        return resizedTo(width: width, height: Int32(Double(currentSize.height) * Double(heightAdjustment)))
+        return resizedTo(width: width, height: Int32(Double(currentSize.height) * Double(heightAdjustment)), applySmoothing: applySmoothing)
 	}
 
 	public func resizedTo(height: Int32, applySmoothing: Bool = true) -> Image? {
 		let currentSize = size
 		let widthAdjustment = Double(height) / Double(currentSize.height)
-        return resizedTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height)
+        return resizedTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
 	}
 }
 
@@ -238,22 +264,30 @@ extension Image {
 		}
 	}
 
+    public func colorize(using color: Color) {
+        gdImageColor(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+    }
+
+    public func desaturate() {
+        gdImageGrayScale(internalImage)
+    }
+
 	public func pixelate(blockSize: Int32) {
 		gdImagePixelate(internalImage, blockSize, GD_PIXELATE_AVERAGE.rawValue)
 	}
 
-	public func blur(radius: Int32) {
-		if let result = gdImageCopyGaussianBlurred(internalImage, radius, -1) {
-			gdImageDestroy(internalImage)
-			internalImage = result
-		}
-	}
+    public func blur(radius: Int32) throws {
+        guard let result = gdImageCopyGaussianBlurred(internalImage, radius, -1) else {
+            throw Error.manipulationFailed(reason: "Could not blur image")
+        }
+        gdImageDestroy(internalImage)
+        internalImage = result
+    }
 
-	public func colorize(using color: Color) {
-		gdImageColor(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
-	}
-
-	public func desaturate() {
-		gdImageGrayScale(internalImage)
-	}
+    public func blurred(radius: Int32) throws -> Image {
+        guard let result = gdImageCopyGaussianBlurred(internalImage, radius, -1) else {
+            throw Error.manipulationFailed(reason: "Could not blur image")
+        }
+        return Image(gdImage: result)
+    }
 }
