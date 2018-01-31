@@ -25,7 +25,7 @@ private struct DataEncoder: Encoder {
         var size: Int32 = 0
         format.prepare(image: image)
         guard let bytesPtr = format.encodeData(image, &size, format.encodingParameters) else {
-            throw Error.invalidFormat
+            throw Error.invalidFormat // TODO: Add a more descriptive error handling
         }
         return Data(bytes: bytesPtr, count: Int(size))
     }

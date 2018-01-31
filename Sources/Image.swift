@@ -8,6 +8,9 @@
 
 import Foundation
 
+/// Allows a more "swifty" handling of gdimage pointer instances
+internal typealias GDImage = gdImagePtr
+
 // In case you were wondering: it's a class rather than a struct because we need
 // deinit to free the internal GD pointer, and that's only available to classes.
 public final class Image {
@@ -87,91 +90,68 @@ extension Image {
 
 extension Image {
 
-    public func fill(from: Point, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
-
-        gdImageFill(internalImage, Int32(from.x), Int32(from.y), internalColor)
-    }
-
-    public func drawLine(from: Point, to: Point, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
-
-        gdImageLine(internalImage, Int32(from.x), Int32(from.y), Int32(to.x), Int32(to.y), internalColor)
+    public func color(of pixel: Point) -> Color {
+        return Color(libgd: gdImageGetTrueColorPixel(internalImage, pixel.x, pixel.y))
     }
 
     public func set(pixel: Point, to color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
-
-        gdImageSetPixel(internalImage, Int32(pixel.x), Int32(pixel.y), internalColor)
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageSetPixel(internalImage, pixel.x, pixel.y, color)
+        gdImageColorDeallocate(internalImage, color)
     }
 
-    public func get(pixel: Point) -> Color {
-        let color = gdImageGetTrueColorPixel(internalImage, Int32(pixel.x), Int32(pixel.y))
-        let a = Double((color >> 24) & 0xFF)
-        let r = Double((color >> 16) & 0xFF)
-        let g = Double((color >> 8) & 0xFF)
-        let b = Double(color & 0xFF)
+    public func fill(from point: Point, color: Color) {
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageFill(internalImage, point.x, point.y, color)
+        gdImageColorDeallocate(internalImage, color)
+    }
 
-        return Color(red: r / 255, green: g / 255, blue: b / 255, alpha: 1 - (a / 127))
+    public func drawLine(from point1: Point, to point2: Point, color: Color) {
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageLine(internalImage, point1.x, point1.y, point2.x, point2.y, color)
+        gdImageColorDeallocate(internalImage, color)
     }
 
     public func strokeEllipse(center: Point, size: Size, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageEllipse(internalImage, center.x, center.y, size.width, size.height, color)
+        gdImageColorDeallocate(internalImage, color)
+    }
 
-        gdImageEllipse(internalImage, Int32(center.x), Int32(center.y), Int32(size.width), Int32(size.height), internalColor)
+    public func strokeEllipse(rectangle: Rectangle, color: Color) {
+        strokeEllipse(center: rectangle.center, size: rectangle.size, color: color)
     }
 
     public func fillEllipse(center: Point, size: Size, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageFilledEllipse(internalImage, center.x, center.y, size.width, size.height, color)
+        gdImageColorDeallocate(internalImage, color)
+    }
 
-        gdImageFilledEllipse(internalImage, Int32(center.x), Int32(center.y), Int32(size.width), Int32(size.height), internalColor)
+    public func fillEllipse(rectangle: Rectangle, color: Color) {
+        fillEllipse(center: rectangle.center, size: rectangle.size, color: color)
     }
 
     public func strokeRectangle(topLeft: Point, bottomRight: Point, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageRectangle(internalImage, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color)
+        gdImageColorDeallocate(internalImage, color)
+    }
 
-        gdImageRectangle(internalImage, Int32(topLeft.x), Int32(topLeft.y), Int32(bottomRight.x), Int32(bottomRight.y), internalColor)
+    public func strokeRectangle(_ rectangle: Rectangle, color: Color) {
+        let bottomRight = Point(x: rectangle.origin.x + size.width, y: rectangle.origin.y + size.width)
+        strokeRectangle(topLeft: rectangle.origin, bottomRight: bottomRight, color: color)
     }
 
     public func fillRectangle(topLeft: Point, bottomRight: Point, color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-        let internalColor = gdImageColorAllocateAlpha(internalImage, red, green, blue, alpha)
-        defer { gdImageColorDeallocate(internalImage, internalColor) }
+        let color = gdImageColorAllocateAlpha(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
+        gdImageFilledRectangle(internalImage, topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, color)
+        gdImageColorDeallocate(internalImage, color)
+    }
 
-        gdImageFilledRectangle(internalImage, Int32(topLeft.x), Int32(topLeft.y), Int32(bottomRight.x), Int32(bottomRight.y), internalColor)
+    public func fillRectangle(_ rectangle: Rectangle, color: Color) {
+        let bottomRight = Point(x: rectangle.origin.x + size.width, y: rectangle.origin.y + size.width)
+        fillRectangle(topLeft: rectangle.origin, bottomRight: bottomRight, color: color)
     }
 }
 
@@ -180,12 +160,9 @@ extension Image {
 extension Image {
 
     public func applyInterpolation(enabled: Bool, currentSize: Size, newSize: Size) {
-        guard enabled else {
+        if !enabled {
             gdImageSetInterpolationMethod(internalImage, GD_NEAREST_NEIGHBOUR)
-            return
-        }
-
-        if currentSize > newSize {
+        } else if currentSize > newSize {
             gdImageSetInterpolationMethod(internalImage, GD_SINC)
         } else if currentSize < newSize {
             gdImageSetInterpolationMethod(internalImage, GD_MITCHELL)
@@ -194,33 +171,27 @@ extension Image {
         }
     }
 
-	public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) -> Image? {
-		applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: Size(width: width, height: height))
+    public func resizedTo(size newSize: Size, applySmoothing: Bool = true) -> Image? {
+        applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: newSize)
 
-		guard let output = gdImageScale(internalImage, UInt32(width), UInt32(height)) else { return nil }
-		return Image(gdImage: output)
-	}
+        guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else { return nil }
+        return Image(gdImage: output)
+    }
 
-	public func resizedTo(width: Int, applySmoothing: Bool = true) -> Image? {
+    public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) -> Image? {
+        return resizedTo(size: Size(width: width, height: height))
+    }
+
+	public func resizedTo(width: Int32, applySmoothing: Bool = true) -> Image? {
 		let currentSize = size
 		let heightAdjustment = Double(width) / Double(currentSize.width)
-		let newSize = Size(width: Int32(width), height: Int32(Double(currentSize.height) * Double(heightAdjustment)))
-
-		applyInterpolation(enabled: applySmoothing, currentSize: currentSize, newSize: newSize)
-
-		guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else { return nil }
-		return Image(gdImage: output)
+        return resizedTo(width: width, height: Int32(Double(currentSize.height) * Double(heightAdjustment)))
 	}
 
-	public func resizedTo(height: Int, applySmoothing: Bool = true) -> Image? {
+	public func resizedTo(height: Int32, applySmoothing: Bool = true) -> Image? {
 		let currentSize = size
 		let widthAdjustment = Double(height) / Double(currentSize.height)
-		let newSize = Size(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: Int32(height))
-
-		applyInterpolation(enabled: applySmoothing, currentSize: currentSize, newSize: newSize)
-
-		guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(height)) else { return nil }
-		return Image(gdImage: output)
+        return resizedTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height)
 	}
 }
 
@@ -250,23 +221,19 @@ extension Image {
 		}
 	}
 
-	public func pixelate(blockSize: Int) {
-		gdImagePixelate(internalImage, Int32(blockSize), GD_PIXELATE_AVERAGE.rawValue)
+	public func pixelate(blockSize: Int32) {
+		gdImagePixelate(internalImage, blockSize, GD_PIXELATE_AVERAGE.rawValue)
 	}
 
-	public func blur(radius: Int) {
-		if let result = gdImageCopyGaussianBlurred(internalImage, Int32(radius), -1) {
+	public func blur(radius: Int32) {
+		if let result = gdImageCopyGaussianBlurred(internalImage, radius, -1) {
 			gdImageDestroy(internalImage)
 			internalImage = result
 		}
 	}
 
 	public func colorize(using color: Color) {
-        let red = Int32(color.redComponent * 255.0)
-        let green = Int32(color.greenComponent * 255.0)
-        let blue = Int32(color.blueComponent * 255.0)
-        let alpha = 127 - Int32(color.alphaComponent * 127.0)
-		gdImageColor(internalImage, red, green, blue, alpha)
+		gdImageColor(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
 	}
 
 	public func desaturate() {

@@ -100,18 +100,26 @@ extension Size: Comparable {
 public struct Rectangle {
 
     /// The origin of the rectangle.
-    public var point: Point
+    public var origin: Point
 
     /// The size of the rectangle.
     public var size: Size
 
+    /// The center point of the rectangle.
+    public var center: Point {
+        return Point(
+            x: origin.x + Int32(0.5 * Double(size.width)),
+            y: origin.x + Int32(0.5 * Double(size.height))
+        )
+    }
+
     /// Creates a rectangle at specified point and given size.
     ///
     /// - Parameters:
-    ///   - point: The origin of the rectangle
-    ///   - height: The size of the rectangle
-    public init(point: Point, size: Size) {
-        self.point = point
+    ///   - origin: The origin of the rectangle
+    ///   - size: The size of the rectangle
+    public init(origin: Point, size: Size) {
+        self.origin = origin
         self.size = size
     }
 }
@@ -119,7 +127,7 @@ public struct Rectangle {
 extension Rectangle {
 
     /// Rectangle at the origin whose width and height are both zero.
-    public static let zero = Rectangle(point: .zero, size: .zero)
+    public static let zero = Rectangle(origin: .zero, size: .zero)
 
     /// Creates a rectangle at specified point and given size.
     ///
@@ -129,7 +137,7 @@ extension Rectangle {
     ///   - width: The width value of the size
     ///   - height: The height value of the size
     public init(x: Int32, y: Int32, width: Int32, height: Int32) {
-        self.init(point: Point(x: x, y: y), size: Size(width: width, height: height))
+        self.init(origin: Point(x: x, y: y), size: Size(width: width, height: height))
     }
 }
 
@@ -144,6 +152,6 @@ extension Rectangle: Equatable {
     ///   - lhs: A value to compare.
     ///   - rhs: Another value to compare.
     public static func == (lhs: Rectangle, rhs: Rectangle) -> Bool {
-        return lhs.point == rhs.point && lhs.size == rhs.size
+        return lhs.origin == rhs.origin && lhs.size == rhs.size
     }
 }
