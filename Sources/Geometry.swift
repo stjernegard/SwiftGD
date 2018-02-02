@@ -11,16 +11,6 @@ public struct Point {
     /// The y-coordinate of the point.
     public var y: Int32
 
-    /// Creates a point with specified coordinates.
-    ///
-    /// - Parameters:
-    ///   - x: The x-coordinate of the point
-    ///   - y: The y-coordinate of the point
-    public init(x: Int32, y: Int32) {
-        self.x = x
-        self.y = y
-    }
-
     /// The point at the origin (0,0).
     public static let zero = Point(x: 0, y: 0)
 }
@@ -50,16 +40,6 @@ public struct Size {
 
     /// The height value of the size.
     public var height: Int32
-
-    /// Creates a size with specified dimensions.
-    ///
-    /// - Parameters:
-    ///   - width: The width value of the size
-    ///   - height: The height value of the size
-    public init(width: Int32, height: Int32) {
-        self.width = width
-        self.height = height
-    }
 
     /// Size whose width and height are both zero.
     public static let zero = Size(width: 0, height: 0)
@@ -111,16 +91,6 @@ public struct Rectangle {
             x: origin.x + (size.width >> 1),
             y: origin.x + (size.height >> 1)
         )
-    }
-
-    /// Creates a rectangle at specified point and given size.
-    ///
-    /// - Parameters:
-    ///   - origin: The origin of the rectangle
-    ///   - size: The size of the rectangle
-    public init(origin: Point, size: Size) {
-        self.origin = origin
-        self.size = size
     }
 }
 
