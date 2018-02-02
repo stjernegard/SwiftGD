@@ -24,10 +24,8 @@ private struct DataEncoder: Encoder {
     func encode(image: gdImagePtr) throws -> Data {
         var size: Int32 = 0
         format.prepare(image: image)
-        guard let bytesPtr = format.encodeData(image, &size, format.encodingParameters) else {
-            throw Error.invalidFormat // TODO: Add a more descriptive error handling
-        }
-        return Data(bytes: bytesPtr, count: Int(size))
+        return try format.encodeData(image, &size, format.encodingParameters)
+            .map({ Data(bytes: $0, count: Int(size)) }).or(throw: .invalidFormat)
     }
 }
 
@@ -49,10 +47,7 @@ private struct DataDecoder: Decoder {
             throw Error.invalidImage(reason: "Given image data exceeds maximum allowed bytes (must be in int32 range)")
         }
         let dataPointer = decodable.withUnsafeBytes({ UnsafeMutableRawPointer(mutating: $0) })
-        guard let imagePtr = format.decodeData(Int32(decodable.count), dataPointer) else {
-            throw Error.invalidFormat
-        }
-        return imagePtr
+        return try format.decodeData(Int32(decodable.count), dataPointer).or(throw: .invalidFormat)
     }
 }
 

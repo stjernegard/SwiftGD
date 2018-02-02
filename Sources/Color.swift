@@ -1,5 +1,8 @@
 import Foundation
 
+// TODO: "Unify" color, or make it more protocol based
+// TODO: Support none alpha color
+
 /// A struct that stores color data and opacity (alpha).
 public struct Color {
 
@@ -184,9 +187,7 @@ extension Color {
     /// - Throws: `.invalidColor` if given string does not match any of the above mentioned criteria or is not a valid hex color.
     public init(hex string: String, leadingAlpha: Bool = false) throws {
         let string = try Color.sanitize(hex: string, leadingAlpha: leadingAlpha)
-        guard let code = Int(string, radix: 16) else {
-            throw Error.invalidColor(reason: "0x\(string) is not a valid hex color code")
-        }
+        let code = try Int(string, radix: 16).or(throw: .invalidColor(reason: "0x\(string) is not a valid hex color code"))
         self.init(hex: code, leadingAlpha: leadingAlpha)
     }
 

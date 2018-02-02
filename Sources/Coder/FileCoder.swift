@@ -81,10 +81,7 @@ private struct FileDecoder: Decoder {
             throw Error.errorReadingFile(reason: "Can not open file at path: \(decodable.path)")
         }
         defer { fclose(inputFile) } // File is opened by now, defer close
-        guard let image: gdImagePtr = format.decodeFile(inputFile) else {
-            throw Error.invalidFormat
-        }
-        return image
+        return try format.decodeFile(inputFile).or(throw: .invalidFormat)
     }
 }
 
