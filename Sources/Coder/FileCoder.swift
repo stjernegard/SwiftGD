@@ -148,7 +148,7 @@ extension Image {
     ///   - format: The raster format of the image to write. Defaults to `.png` with alpha channel and default compression.
     /// - Returns: The file url of the written image
     /// - Throws: `Error` if the writing `self` in specified raster format at given `url` failed
-    @discardableResult public func write(to url: URL, override: Bool = false, as format: EncodableRasterFormat = .default) throws -> URL {
+    @discardableResult public func write(to url: URL, override: Bool = false, as format: EncodableRasterFormat) throws -> URL {
         return try encode(using: FileEncoder(outputFile: FileEncoder.File(override: override, url: url), format: format))
     }
 }

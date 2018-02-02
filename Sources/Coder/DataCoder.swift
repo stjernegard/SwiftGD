@@ -108,7 +108,7 @@ extension Image {
     /// - Parameter format: The raster format of the returning image data. Defaults to `.png` with alpha channel and default compression.
     /// - Returns: The image data
     /// - Throws: `Error` if the export of `self` in specified raster format failed.
-    public func export(as format: EncodableRasterFormat = .default) throws -> Data {
+    public func export(as format: EncodableRasterFormat) throws -> Data {
         return try encode(using: DataEncoder(format: format))
     }
 }

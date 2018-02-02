@@ -23,9 +23,6 @@ public enum EncodableRasterFormat {
     case tiff
     case wbmp(index: Int32)
     case webp
-
-    /// The default format to apply on encoding (if not otherwise specified)
-    public static let `default`: EncodableRasterFormat = .png(compression: -1, alpha: true) // TODO: Remove default. There is no actual default on export definable within the framework. Rather leave it up the developer.
 }
 
 /// Decodable raster formats
