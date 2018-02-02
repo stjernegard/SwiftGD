@@ -108,8 +108,8 @@ public struct Rectangle {
     /// The center point of the rectangle.
     public var center: Point {
         return Point(
-            x: origin.x + Int32(0.5 * Double(size.width)),
-            y: origin.x + Int32(0.5 * Double(size.height))
+            x: origin.x + (size.width >> 1),
+            y: origin.x + (size.height >> 1)
         )
     }
 
