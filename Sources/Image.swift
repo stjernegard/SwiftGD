@@ -215,26 +215,27 @@ extension Image {
         try resizeTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
     }
 
-    public func resizedTo(size newSize: Size, applySmoothing: Bool = true) -> Image? {
+    public func resizedTo(size newSize: Size, applySmoothing: Bool = true) throws -> Image {
         applyInterpolation(enabled: applySmoothing, currentSize: size, newSize: newSize)
-        guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else { return nil }
+        guard let output = gdImageScale(internalImage, UInt32(newSize.width), UInt32(newSize.height)) else {
+            throw Error.resizingFailed(reason: "Could not resize image")
+        }
         return Image(gdImage: output)
     }
 
-    public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) -> Image? {
-        return resizedTo(size: Size(width: width, height: height), applySmoothing: applySmoothing)
+    public func resizedTo(width: Int32, height: Int32, applySmoothing: Bool = true) throws -> Image {
+        return try resizedTo(size: Size(width: width, height: height), applySmoothing: applySmoothing)
     }
 
-	public func resizedTo(width: Int32, applySmoothing: Bool = true) -> Image? {
-		let currentSize = size
-		let heightAdjustment = Double(width) / Double(currentSize.width)
-        return resizedTo(width: width, height: Int32(Double(currentSize.height) * Double(heightAdjustment)), applySmoothing: applySmoothing)
+	public func resizedTo(width: Int32, applySmoothing: Bool = true) throws -> Image {
+		let heightAdjustment = Double(width) / Double(size.width)
+        let height = Int32(Double(size.height) * Double(heightAdjustment))
+        return try resizedTo(width: width, height: height, applySmoothing: applySmoothing)
 	}
 
-	public func resizedTo(height: Int32, applySmoothing: Bool = true) -> Image? {
-		let currentSize = size
-		let widthAdjustment = Double(height) / Double(currentSize.height)
-        return resizedTo(width: Int32(Double(currentSize.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
+	public func resizedTo(height: Int32, applySmoothing: Bool = true) throws -> Image {
+		let widthAdjustment = Double(height) / Double(size.height)
+        return try resizedTo(width: Int32(Double(size.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
 	}
 }
 
