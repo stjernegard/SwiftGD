@@ -1,11 +1,3 @@
-#if os(Linux)
-    import Glibc
-    import Cgdlinux
-#else
-    import Darwin
-    import Cgdmac
-#endif
-
 import Foundation
 
 // MARK: - Encoding
@@ -21,7 +13,7 @@ private struct DataEncoder: Encoder {
     /// - Parameter image: The `gdImagePtr` to encode
     /// - Returns: The image data representation of given `image`.
     /// - Throws: `Error` if encoding failed
-    func encode(image: gdImagePtr) throws -> Data {
+    func encode(image: GDImage) throws -> Data {
         var size: Int32 = 0
         format.prepare(image: image)
         return try format.encodeData(image, &size, format.encodingParameters)
@@ -42,7 +34,7 @@ private struct DataDecoder: Decoder {
     /// - Parameter decodable: The image data representation necessary to decode an image instance
     /// - Returns: The `gdImagePtr` of the instantiated image
     /// - Throws: `Error` if decoding failed
-    fileprivate func decode(decodable: Data) throws -> gdImagePtr {
+    fileprivate func decode(decodable: Data) throws -> GDImage {
         guard decodable.count < Int32.max else { // Bytes must not exceed int32 as limit by `gdImageCreate..Ptr()`
             throw Error.invalidImage(reason: "Given image data exceeds maximum allowed bytes (must be in int32 range)")
         }
@@ -62,7 +54,7 @@ private struct CollectionDataDecoder: Decoder {
     /// - Parameter decodable: The image data representation necessary to decode an image instance
     /// - Returns: The `gdImagePtr` of the instantiated image
     /// - Throws: `Error` if decoding failed
-    func decode(decodable: Data) throws -> gdImagePtr {
+    func decode(decodable: Data) throws -> GDImage {
         for format in formats {
             if let result = try? DataDecoder(format: format).decode(decodable: decodable) {
                 return result

@@ -1,11 +1,3 @@
-#if os(Linux)
-    import Glibc
-    import Cgdlinux
-#else
-    import Darwin
-    import Cgdmac
-#endif
-
 import Foundation
 
 // MARK: - Encoding
@@ -34,7 +26,7 @@ private struct FileEncoder: Encoder {
     /// - Parameter image: The `gdImagePtr` to encode
     /// - Returns: The image file url of the written `image`.
     /// - Throws: `Error` if encoding failed
-    func encode(image: gdImagePtr) throws -> URL {
+    func encode(image: GDImage) throws -> URL {
 
         let fileManager: FileManager = .default
         let path: String = outputFile.url.path
@@ -76,7 +68,7 @@ private struct FileDecoder: Decoder {
     /// - Parameter decodable: The image representation as file necessary to decode an image instance
     /// - Returns: The `gdImagePtr` of the instantiated image
     /// - Throws: `Error` if decoding failed
-    fileprivate func decode(decodable: URL) throws -> gdImagePtr {
+    fileprivate func decode(decodable: URL) throws -> GDImage {
         guard let inputFile = fopen(decodable.path, "rb") else { // Open for reading as binary
             throw Error.errorReadingFile(reason: "Can not open file at path: \(decodable.path)")
         }
@@ -96,7 +88,7 @@ private struct CollectionFileDecoder: Decoder {
     /// - Parameter decodable: The image representation as file necessary to decode an image instance
     /// - Returns: The `gdImagePtr` of the instantiated image
     /// - Throws: `Error` if decoding failed
-    func decode(decodable: URL) throws -> gdImagePtr {
+    func decode(decodable: URL) throws -> GDImage {
         for format in formats {
             if let result = try? FileDecoder(format: format).decode(decodable: decodable) {
                 return result
