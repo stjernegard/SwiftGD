@@ -338,7 +338,7 @@ extension Image {
     ///   - other: The `other` image to merge into this image.
     ///   - rect: The area within this image to draw the `other` image into.
     /// - Throws: An error if merge failed.
-    func merge(with other: Image, in rect: Rectangle) throws {
+    public func merge(with other: Image, in rect: Rectangle) throws {
         gdImageCopy(internalImage, other.internalImage, rect.origin.x, rect.origin.y, 0, 0, rect.size.width, rect.size.height)
     }
 
@@ -348,7 +348,7 @@ extension Image {
     ///   - other: The `other` image to merge into this image.
     ///   - point: The starting `Point` at which to start merging.
     /// - Throws: An error if merge failed.
-    func merge(with other: Image, at point: Point) throws {
+    public func merge(with other: Image, at point: Point) throws {
         try merge(with: other, in: Rectangle(origin: point, size: other.size))
     }
 }
