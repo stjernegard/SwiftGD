@@ -291,3 +291,17 @@ extension Image {
         return Image(gdImage: result)
     }
 }
+
+// MARK: - Cloning & Copying
+
+extension Image {
+
+    /// Merges `other` image into this using given `rect` as content area for the new image.
+    ///
+    /// - Parameters:
+    ///   - other: The `other` image to merge into this image.
+    ///   - rect: The area within this image to draw the `other` image into.
+    func merge(with other: Image, in rect: Rectangle) throws {
+        gdImageCopy(internalImage, other.internalImage, rect.origin.x, rect.origin.y, 0, 0, rect.size.width, rect.size.height)
+    }
+}
