@@ -10,6 +10,7 @@ public enum Error: Swift.Error {
     case invalidImage(reason: String) // The reason this error was thrown
     case invalidColor(reason: String) // The reason this error was thrown.
     case resizingFailed(reason: String)
+    case croppingFailed(reason: String)
     case manipulationFailed(reason: String)
 }
 

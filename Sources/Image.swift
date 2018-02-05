@@ -239,6 +239,41 @@ extension Image {
 	}
 }
 
+// MARK: - Cropping
+
+extension Image {
+
+    // MARK: In-Place
+
+    /// <#Description#>
+    ///
+    /// - Parameter frame: <#frame description#>
+    /// - Throws: <#throws value description#>
+    public func crop(using frame: Rectangle) throws {
+        var rect = gdRect(x: frame.origin.x, y: frame.origin.y, width: frame.size.width, height: frame.size.height)
+        guard let image = gdImageCrop(internalImage, &rect) else {
+            throw Error.croppingFailed(reason: "Could not crop image")
+        }
+        gdImageDestroy(internalImage)
+        internalImage = image
+    }
+
+    // MARK: Cropped Copies
+
+    /// <#Description#>
+    ///
+    /// - Parameter frame: <#frame description#>
+    /// - Returns: <#return value description#>
+    /// - Throws: <#throws value description#>
+    public func cropped(using frame: Rectangle) throws -> Image {
+        var rect = gdRect(x: frame.origin.x, y: frame.origin.y, width: frame.size.width, height: frame.size.height)
+        guard let image = gdImageCrop(internalImage, &rect) else {
+            throw Error.croppingFailed(reason: "Could not crop image")
+        }
+        return Image(gdImage: image)
+    }
+}
+
 // MARK: - Manipulating
 
 extension Image {
