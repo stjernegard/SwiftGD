@@ -150,10 +150,11 @@ extension Color {
 
     /// Returns the color as hex value (RGBA)
     public var hex: Int {
-        return Int(red * 255) << 24
-            + Int(green * 255) << 16
-            + Int(blue * 255) << 8
-            + Int(alpha * 255) << 0
+        var hex = Int(red * 255) << 24
+        hex += Int(green * 255) << 16
+        hex += Int(blue * 255) << 8
+        hex += Int(alpha * 255) << 0
+        return hex
     }
 
     /// Returns the color as hex string, e.g "ffee33dd" (RGBA)
