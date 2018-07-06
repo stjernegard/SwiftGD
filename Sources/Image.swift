@@ -1,9 +1,9 @@
 #if os(Linux)
-	import Glibc
-	import Cgdlinux
+import Glibc
+import Cgdlinux
 #else
-	import Darwin
-	import Cgdmac
+import Darwin
+import Cgdmac
 #endif
 
 import Foundation
@@ -18,7 +18,7 @@ internal typealias GDImage = gdImagePtr
 public final class Image {
 
     /// The underlying image to manage and process
-	private var internalImage: gdImagePtr
+    private var internalImage: gdImagePtr
 
     /// Initializes a new image handling/representing given `gdImagePtr`
     ///
@@ -227,16 +227,16 @@ extension Image {
         return try resizedTo(size: Size(width: width, height: height), applySmoothing: applySmoothing)
     }
 
-	public func resizedTo(width: Int32, applySmoothing: Bool = true) throws -> Image {
-		let heightAdjustment = Double(width) / Double(size.width)
+    public func resizedTo(width: Int32, applySmoothing: Bool = true) throws -> Image {
+        let heightAdjustment = Double(width) / Double(size.width)
         let height = Int32(Double(size.height) * Double(heightAdjustment))
         return try resizedTo(width: width, height: height, applySmoothing: applySmoothing)
-	}
+    }
 
-	public func resizedTo(height: Int32, applySmoothing: Bool = true) throws -> Image {
-		let widthAdjustment = Double(height) / Double(size.height)
+    public func resizedTo(height: Int32, applySmoothing: Bool = true) throws -> Image {
+        let widthAdjustment = Double(height) / Double(size.height)
         return try resizedTo(width: Int32(Double(size.width) * Double(widthAdjustment)), height: height, applySmoothing: applySmoothing)
-	}
+    }
 }
 
 // MARK: - Cropping
@@ -289,16 +289,16 @@ extension Image {
         case both
     }
 
-	public func flip(_ mode: FlipMode) {
-		switch mode {
-		case .horizontal:
-			gdImageFlipHorizontal(internalImage)
-		case .vertical:
-			gdImageFlipVertical(internalImage)
-		case .both:
-			gdImageFlipBoth(internalImage)
-		}
-	}
+    public func flip(_ mode: FlipMode) {
+        switch mode {
+        case .horizontal:
+            gdImageFlipHorizontal(internalImage)
+        case .vertical:
+            gdImageFlipVertical(internalImage)
+        case .both:
+            gdImageFlipBoth(internalImage)
+        }
+    }
 
     public func colorize(using color: Color) {
         gdImageColor(internalImage, color.gdRed, color.gdGreen, color.gdBlue, color.gdAlpha)
@@ -308,9 +308,9 @@ extension Image {
         gdImageGrayScale(internalImage)
     }
 
-	public func pixelate(blockSize: Int32) {
-		gdImagePixelate(internalImage, blockSize, GD_PIXELATE_AVERAGE.rawValue)
-	}
+    public func pixelate(blockSize: Int32) {
+        gdImagePixelate(internalImage, blockSize, GD_PIXELATE_AVERAGE.rawValue)
+    }
 
     public func blur(radius: Int32) throws {
         guard let result = gdImageCopyGaussianBlurred(internalImage, radius, -1) else {

@@ -106,7 +106,7 @@ extension Color {
      This is taken into account in conversions from/to the normalized color that is represented by `this`.
      See: `gdAlpha` and `init(libgd:)`
      Reference: https://github.com/libgd/libgd/issues/132
-    */
+     */
 
     /// The red component in libgd space
     internal var gdRed: Int32 {
